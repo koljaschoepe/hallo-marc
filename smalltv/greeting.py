@@ -174,7 +174,7 @@ def _sequence():
         add(_compose(_face(right="closed", smile=0.8)), 600)
         add(_compose(_face(smile=0.6)), 60)
 
-    def say(text, hold=3.6):
+    def say(text, hold=2.0):
         # Gesicht rueckt nach unten
         for k in (0.2, 0.45, 0.7, 0.9, 1.0):
             add(_compose(_face(smile=0.6), k=k), 45)
@@ -182,7 +182,7 @@ def _sequence():
         for p in (0.35, 0.7, 0.92):
             add(_compose(happy, text, pop=p, k=1), 55)
         add(_compose(happy, text, k=1), int(hold * 1000))
-        add(_compose(_face(smile=0.8), text, k=1), 1100)   # Augen wieder auf, Blase bleibt
+        add(_compose(_face(smile=0.8), text, k=1), 450)   # Augen wieder auf, Blase bleibt
         for p in (0.6, 0.25):
             add(_compose(_face(smile=0.7), text, pop=p, k=1), 55)
         # und zurueck in die Mitte
@@ -192,33 +192,28 @@ def _sequence():
     # Auftakt: aufwachen
     for h in (6, 20, 38, EYE_H):
         add(_compose(_face(h=h, smile=0.3)), 90)
-    idle(1.2)
+    idle(0.8)
     blink()
     say(MESSAGES[0])
-    idle(1.8)
-    glance(12)
-    idle(0.6)
-    glance(-12)
-    blink()
-    idle(1.4)
-    wink()
-    idle(1.6)
-    say(MESSAGES[1], hold=4.2)
-    idle(1.6)
-    glance(-12, hold=1.2)
-    blink()
     idle(1.2)
-    say(MESSAGES[2], hold=4.2)
-    idle(1.5)
-    glance(12)
+    glance(12, hold=0.6)
+    glance(-12, hold=0.6)
+    blink()
     wink()
+    idle(0.8)
+    say(MESSAGES[1], hold=2.4)
     idle(1.0)
-    add(_qr_card(), 9000)
-    idle(1.2)
+    glance(-12, hold=0.7)
     blink()
-    idle(1.5)
-    glance(-12)
-    idle(1.2)
+    say(MESSAGES[2], hold=2.4)
+    idle(1.0)
+    wink()
+    idle(0.6)
+    add(_qr_card(), 15000)
+    idle(1.0)
+    blink()
+    glance(12, hold=0.7)
+    idle(0.8)
     return frames, durs
 
 

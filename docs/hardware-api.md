@@ -80,6 +80,11 @@ Daten nach `Connection: close`). `curl` toleriert das; strikte Libraries
 - `/brt.json` liefert z.B. `{"brt":"128"}` (String).
 - `/v.json` liefert `{"m": "SmallTV-Ultra","v":"Ultra-V9.0.51"}`, gut fuers Finden im Netz.
 - Speicher: 3,1 MB gesamt, rund 2,2 MB fuer eigene Bilder nutzbar.
+- WLAN: `/wifisave?s=<ssid>&p=<passwort>` speichert und startet neu. `/config.json` zeigt die SSID.
+- **Ohne erreichbares WLAN** laeuft ein eingestelltes eigenes Bild (theme 3) einfach weiter,
+  es oeffnet sich *kein* Hotspot. Hotspot `GIFTV` (192.168.4.1) gibt es nur nach dem
+  Stecker-Reset: beim Fortschrittsbalken zweimal Strom ziehen, beim dritten Mal stecken lassen.
+- Der Stecker-Reset setzt das Theme auf 1 (Uhr) zurueck, Bilder bleiben erhalten.
 
 ## Firmware-Optionen (Bewertung)
 - **Stock V9.x behalten (empfohlen):** simple, sprachunabhaengige Bild-Push-API.

@@ -1,129 +1,106 @@
 # Hallo Marc!
 
-Das kleine Display auf deinem Schreibtisch ist ein **GeekMagic SmallTV-Ultra**. Bis
-eben hat es bei mir Abfahrten, Wetter und ein Gesicht gezeigt, ab jetzt gehört es dir.
-In diesem Repo liegt alles, was du brauchst, um eigene Sachen darauf zu bringen.
+Das kleine Display ist ein **GeekMagic SmallTV-Ultra**. Bei mir hat es Abfahrten, Wetter
+und ein Gesicht gezeigt, ab jetzt gehört es dir. Hier liegt alles, um eigene Sachen
+draufzubringen.
 
 Viel Spaß beim Basteln!
 Kolja
 
 ---
 
-## Was das Ding ist (und was nicht)
+## Das Ding in Kürze
 
-| | |
-| --- | --- |
-| Chip | ESP8266, 4 MB Flash, ~80 KB RAM |
-| Display | 1,54" IPS, **240 x 240 px**, RGB565 |
-| Verbindung | **nur WLAN, 2,4 GHz**. USB-C liefert nur Strom, keine Daten |
-| Firmware | Werks-Firmware `Ultra-V9.0.51`, bleibt drauf |
-| Speicher für Bilder | rund 2 MB |
+ESP8266, 240 x 240 px, **nur WLAN 2,4 GHz**. Das USB-C-Kabel liefert nur Strom.
+Auf dem Gerät läuft kein eigener Code. Stattdessen **rendert ein Rechner ein Bild
+(JPEG/GIF), lädt es per HTTP hoch und lässt es anzeigen.** Rund 2 MB Platz für Bilder.
 
-Auf dem Gerät läuft kein eigener Code. Das Prinzip ist simpel: **ein Rechner rendert ein
-Bild (JPEG oder GIF), lädt es per HTTP hoch und sagt dem Gerät, dass es das zeigen soll.**
-Das Rendern übernimmt Pillow. Der Rechner kann dein Laptop sein, für Dauerbetrieb
-ein Raspberry Pi, ein NAS oder ein Homeserver.
-
-Die Begrüßung, die gerade läuft, ist einfach ein GIF (`hallo_marc.gif`), das auf dem Gerät
-liegt. Sie läuft auch ohne WLAN und ohne Rechner weiter.
+Die Begrüßung ist ein GIF auf dem Gerät und läuft ohne WLAN und ohne Rechner.
 
 ## 1. Ins WLAN bringen
 
-Das Gerät kennt dein WLAN noch nicht und macht deshalb einen eigenen Hotspot auf.
+Das Gerät kennt noch kein WLAN und öffnet von selbst keinen Hotspot. So geht es:
 
-1. Mit dem Handy oder Laptop ins WLAN **`GIFTV`** gehen.
-2. Im Browser `http://192.168.4.1` öffnen, falls sich nichts von selbst öffnet.
-3. Unter *Network* dein 2,4-GHz-WLAN wählen, Passwort eingeben, **save**.
-4. Das Gerät startet neu und zeigt beim Hochfahren kurz seine neue IP-Adresse.
+1. **Stecker-Reset:** Kabel rein. Sobald der Fortschrittsbalken erscheint, sofort ziehen.
+   **Zweimal** so, beim **dritten** Mal stecken lassen.
+2. Das Display zeigt die Einrichtung. Handy ins WLAN **`GIFTV`** (Warnung „kein Internet“ ignorieren).
+3. **`http://192.168.4.1`** öffnen → *Network* → 2,4-GHz-WLAN wählen, Passwort, **save**.
+4. Das Gerät startet neu und zeigt kurz seine IP. Danach steht es auf der Werks-Uhr.
 
-Danach ist die Weboberfläche unter `http://<ip>` erreichbar. Tipp: im Router eine
-feste IP für das Gerät vergeben.
+Die Begrüßung bleibt gespeichert, `make hallo` holt sie zurück.
 
-## 2. Loslegen
+## 2. Die Weboberfläche
 
-```bash
-git clone https://github.com/koljaschoepe/hallo-marc.git
-cd hallo-marc
-make setup        # venv + Pillow, requests, qrcode; legt .env an
-make discover     # sucht das Display im WLAN
-# IP in .env eintragen (SMALLTV_IP=...)
-make probe        # antwortet es?
-```
+Unter `http://<ip>` (vom selben WLAN aus):
 
-Dann einfach ausprobieren:
+| Menü | Wofür |
+| --- | --- |
+| *Network* | WLAN wechseln |
+| *Weather* | Stadt für die eingebaute Wetteranzeige |
+| *Time* | Zeitserver, 12/24 h |
+| *Pictures* | Bilder und GIFs per Browser hochladen und auswählen (240 x 240) |
+| *Settings* | Helligkeit, zeitgesteuertes Dimmen, weitere Geräteeinstellungen |
 
-```bash
-.venv/bin/python examples/01_hallo_welt.py "Moin Kolja"
-make face MOOD=happy        # neutral happy listening thinking speaking sad
-make weather                # Wetterkarte
-make transit                # Abfahrtstafel Zwinglistraße
-make notify TEXT="Kaffee?"  # Hinweis-Karte
-make hallo                  # die Begrüßung wiederherstellen
-```
+Kein Programmieren nötig, um Bilder draufzuladen. Fertige GIFs passend zuschneiden:
+[ezgif.com](https://ezgif.com) auf 240 x 240.
 
-## 3. Was drin ist
-
-```
-smalltv/
-  client.py     HTTP-Client für die Werks-Firmware (fängt ihre HTTP-Macken ab)
-  config.py     .env laden, Schrift (DejaVu liegt bei, läuft überall gleich)
-  greeting.py   die Begrüßung: Gesicht + Sprechblasen + QR-Karte als ein GIF
-  face.py       das Gesicht in sechs Stimmungen, als loopende GIFs
-  weather.py    Wetterkarte (Open-Meteo, kein API-Key)
-  transit.py    Abfahrtstafel (VVO-Echtzeit, kein API-Key)
-  render.py     Text- und Status-Karten
-  notify.py     CLI: Hinweis anzeigen oder in die Queue legen
-  companion.py  Daemon: jede Minute Tafel, ab und zu Wetter, Hinweise aus der Queue
-  discover.py   Gerät im Netz finden
-examples/
-  01_hallo_welt.py   das kleinste mögliche Programm (15 Zeilen)
-  02_countdown.py    Tage bis zu einem Datum
-  03_animation.py    eigenes animiertes GIF (hüpfender Ball)
-docs/
-  hardware-api.md    alle HTTP-Endpunkte, Bildformate, Firmware-Optionen
-```
-
-Ort, Haltestelle und Linien stehen in der `.env`. Voreingestellt sind Striesen und die
-Haltestelle Zwinglistraße. Andere Haltestelle finden:
+## 3. Programmieren
 
 ```bash
-.venv/bin/python -m smalltv.transit find "Schillerplatz"
+git clone https://github.com/koljaschoepe/hallo-marc.git && cd hallo-marc
+make setup       # venv + Pillow, requests, qrcode; legt .env an
+make discover    # findet das Display, IP in .env eintragen
 ```
+
+```bash
+.venv/bin/python examples/01_hallo_welt.py "Moin"   # 15 Zeilen, das Grundprinzip
+make face MOOD=happy      # neutral happy listening thinking speaking sad
+make weather              # Wetterkarte
+make transit              # Abfahrten Zwinglistraße
+make notify TEXT="Kaffee?"
+make run                  # Daemon: Tafel jede Minute, Wetter, Hinweise aus Queue
+make hallo                # Begrüßung wiederherstellen
+```
+
+Ort, Haltestelle und Linien stehen in der `.env`. Andere Haltestelle:
+`.venv/bin/python -m smalltv.transit find "Schillerplatz"`.
+
+| Datei | Inhalt |
+| --- | --- |
+| `smalltv/client.py` | HTTP-Client, fängt die Firmware-Macken ab |
+| `smalltv/greeting.py` | die Begrüßung, `MESSAGES` ändern für eigene Sprüche |
+| `smalltv/face.py` | das Gesicht in sechs Stimmungen |
+| `smalltv/weather.py`, `transit.py` | Wetter (Open-Meteo), Abfahrten (VVO), beide ohne API-Key |
+| `smalltv/companion.py` | Dauerbetrieb, z.B. auf einem Raspberry Pi |
+| `examples/` | Hallo Welt, Countdown, eigene Animation |
+| `docs/hardware-api.md` | alle Endpunkte und was am Gerät getestet ist |
 
 ## 4. Die API in 30 Sekunden
 
 ```bash
-IP=192.168.178.50
 curl -F "file=@bild.jpg" "http://$IP/doUpload?dir=/image/"   # hochladen
-curl "http://$IP/set?theme=3"                                 # Modus "eigenes Bild"
+curl "http://$IP/set?theme=3"                                 # Modus eigenes Bild
 curl "http://$IP/set?img=/image/bild.jpg"                     # anzeigen
 curl "http://$IP/set?autoplay=0"                              # Album-Wechsel aus
 curl "http://$IP/set?brt=60"                                  # Helligkeit
-curl "http://$IP/delete?file=/image/bild.jpg"                 # löschen
-curl  http://$IP/space.json                                   # freier Speicher
 ```
 
-Mehr in [docs/hardware-api.md](docs/hardware-api.md).
+## 5. Gut zu wissen
 
-## 5. Was ich auf dem Weg gelernt habe
-
-- **JPEG für Standbilder, GIF für Animationen.** JPEG lädt am ESP8266 etwa doppelt so schnell wie PNG.
-- **Groß und kontrastreich.** Unter ~12 px Schrift wird es unleserlich. Schwarzer Grund plus eine Akzentfarbe sieht auf dem IPS am besten aus.
-- **GIFs klein halten.** Wenige Farben (`quantize(colors=16..48)`), unter ~300 KB. Gleiche Frames fasst Pillow beim Speichern selbst zusammen.
-- **Jeder `/set`-Aufruf kostet ~1 s.** Theme und Autoplay einmal setzen, danach nur noch `img=` wechseln.
-- **Die Firmware antwortet manchmal kaputtes HTTP**, obwohl die Aktion geklappt hat. `curl` ist das egal, `requests` wirft. `client.py` fängt das ab.
-- **Flash schonen.** Nicht sekündlich hochladen. Jede Minute ist unkritisch.
-- **Uhrzeit ins Bild backen.** Das Gerät kann keine Live-Daten in eigene Bilder schreiben. Wer eine Uhr will, rendert minütlich neu (siehe `transit.py`) oder schaltet in der Weboberfläche auf eine der eingebauten Uhr-Ansichten.
+- **JPEG für Standbilder, GIF für Animationen**, GIFs unter ~300 KB, wenige Farben.
+- **Große Schrift, starker Kontrast.** Unter ~12 px wird es unleserlich.
+- **Jeder `/set`-Aufruf dauert ~1 s.** Theme einmal setzen, danach nur `img=` wechseln.
+- **Kaputte HTTP-Antworten** der Firmware heißen meist: hat trotzdem geklappt.
+- **Flash schonen:** höchstens etwa minütlich hochladen.
+- **Firmware-Update** nur von [GeekMagicClock/smalltv-ultra](https://github.com/GeekMagicClock/smalltv-ultra)
+  und nur die Ultra-Variante. Dort liegt auch das Handbuch.
 
 ## 6. Ideen
 
-- Build-Status deiner CI (grün/rot, Gesicht `happy`/`sad`)
-- Kalender: nächster Termin und Minuten bis dahin
-- Pomodoro-Timer mit dem Gesicht als Pausenerinnerung
-- Home-Assistant-Werte (es gibt dafür eine fertige Integration: `adrienbrault/geekmagic-hacs`)
-- Ein lokales LLM, das morgens einen Satz zum Tag sagt
-- Pixel-Art-Galerie im Album-Modus (`/set?autoplay=1&i_i=10`)
+CI-Status mit Gesicht `happy`/`sad` · nächster Kalendertermin · Pomodoro-Timer ·
+Home-Assistant-Werte ([geekmagic-hacs](https://github.com/adrienbrault/geekmagic-hacs)) ·
+Pixel-Art-Galerie im Album-Modus (`/set?autoplay=1&i_i=10`)
 
-## Lizenz
+---
 
-Code: MIT. Schrift: DejaVu Sans (Bitstream-Vera-Lizenz, frei weitergebbar), liegt in `smalltv/fonts/`.
+Code: MIT. Schrift: DejaVu Sans (frei weitergebbar).
