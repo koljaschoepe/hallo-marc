@@ -1,0 +1,8 @@
+.env
+.venv
+out/*
+!out/.keep
+__pycache__/
+*.pyc
+.DS_Store
+.face_deployed
